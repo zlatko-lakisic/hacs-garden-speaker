@@ -1,5 +1,13 @@
 # Garden Speaker
 
+<p align="center">
+  <img src="images/readme-hero.png" alt="Garden Speaker — Bluetooth garden audio stack for Home Assistant" width="720">
+</p>
+
+<p align="center">
+  <img src="images/icon.png" alt="Garden Speaker" width="96">
+</p>
+
 Home Assistant custom integration for operating the Garden Speaker Bluetooth
 audio stack through its local Control API. Music playback remains in OwnTone
 and Music Assistant; this integration diagnoses and repairs the supporting
