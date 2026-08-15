@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release_zip:
+    name: Build and attach HACS zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version in manifest.json
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          export VERSION
+          python3 <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          path = Path("custom_components/garden_speaker/manifest.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+          data["version"] = version
+          path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"manifest.json version -> {version}")
+          PY
+
+      - name: Create integration zip
+        run: |
+          cd custom_components/garden_speaker
+          zip -r ../garden_speaker.zip ./
+
+      - name: Upload zip to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: custom_components/garden_speaker.zip

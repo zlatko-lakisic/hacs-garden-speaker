@@ -1,0 +1,43 @@
+{
+  "title": "Garden Speaker",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Garden Speaker",
+        "description": "Enter the local Control API connection details.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "api_key": "API key"
+        },
+        "data_description": {
+          "api_key": "Optional X-API-Key used for repair and restart requests."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to the Control API.",
+      "invalid_auth": "The Control API rejected the API key.",
+      "invalid_host": "Enter only a hostname or IP address, without a URL scheme or path.",
+      "unknown": "Unexpected error while connecting."
+    },
+    "abort": {
+      "already_configured": "This Garden Speaker Control API is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "health": {
+        "name": "Health"
+      }
+    },
+    "binary_sensor": {
+      "speaker_connected": {
+        "name": "Speaker connected"
+      },
+      "owntone_output_selected": {
+        "name": "OwnTone output selected"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+health_check:
+  name: Check health
+  description: Run a fresh diagnosis of the Bluetooth, PulseAudio, OwnTone, and container chain.
+  fields:
+    config_entry_id:
+      name: Config entry
+      description: Garden Speaker instance to use. Optional when only one is configured.
+      selector:
+        config_entry:
+          integration: garden_speaker
+
+repair:
+  name: Repair
+  description: Run safe automatic repairs without removing Bluetooth pairing.
+  fields:
+    config_entry_id:
+      name: Config entry
+      description: Garden Speaker instance to use. Optional when only one is configured.
+      selector:
+        config_entry:
+          integration: garden_speaker
+
+repair_pairing:
+  name: Re-pair Bluetooth speaker
+  description: Remove stale Bluetooth credentials and fully pair the PartyBox again. This can take up to three minutes.
+  fields:
+    config_entry_id:
+      name: Config entry
+      description: Garden Speaker instance to use. Optional when only one is configured.
+      selector:
+        config_entry:
+          integration: garden_speaker
+    confirm_pairing_mode:
+      name: Speaker is in pairing mode
+      description: Hold the PartyBox Bluetooth button for 3–5 seconds until its LED blinks rapidly, and turn off phone Bluetooth before enabling this confirmation.
+      required: true
+      selector:
+        boolean:
+
+restart_stack:
+  name: Restart audio stack
+  description: Restart the managed Garden Speaker services in dependency order.
+  fields:
+    config_entry_id:
+      name: Config entry
+      description: Garden Speaker instance to use. Optional when only one is configured.
+      selector:
+        config_entry:
+          integration: garden_speaker
+    include_control_api:
+      name: Include Control API
+      description: Also restart the API handling this request. Leave disabled for normal recovery.
+      default: false
+      selector:
+        boolean:

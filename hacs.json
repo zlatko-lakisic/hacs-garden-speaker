@@ -1,0 +1,8 @@
+{
+  "name": "Garden Speaker",
+  "content_in_root": false,
+  "filename": "garden_speaker.zip",
+  "homeassistant": "2024.1.0",
+  "render_readme": true,
+  "zip_release": true
+}
