@@ -183,6 +183,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             SERVICE_RESTART_STACK: "Garden Speaker — Restart stack",
         }
         title = titles.get(action, "Garden Speaker")
+        action_detail: str | None = None
         try:
             if action == SERVICE_REPAIR:
                 _notify(
@@ -214,7 +215,25 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                         + (" (including Control API)…" if include_api else "…")
                     ),
                 )
-                await coordinator.api.restart_stack(include_control_api=include_api)
+                result = await coordinator.api.restart_stack(
+                    include_control_api=include_api
+                )
+                items = result.get("items") if isinstance(result, dict) else None
+                if isinstance(items, list) and items:
+                    names = [
+                        str(item.get("name") or item.get("id") or "?")
+                        for item in items
+                        if isinstance(item, dict)
+                    ]
+                    running = sum(
+                        1
+                        for item in items
+                        if isinstance(item, dict) and item.get("running")
+                    )
+                    action_detail = (
+                        f"Restarted {len(items)} service(s)"
+                        f" ({running} running): {', '.join(names)}."
+                    )
         except GardenSpeakerError as err:
             fail_title = f"{title} failed"
             fail_msg = str(err)
@@ -241,6 +260,8 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             SERVICE_RESTART_STACK: "Audio stack restart finished.",
         }
         lines = [done_lines.get(action, "Action finished."), f"Health now: {short}."]
+        if action_detail:
+            lines.insert(1, action_detail)
         if issues:
             lines.append("")
             lines.append("Remaining issues:")
@@ -260,7 +281,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
             action=action,
             success=True,
             data=coordinator.data,
-            detail=done_lines.get(action),
+            detail=action_detail or done_lines.get(action),
         )
 
     async def handle_repair(call: ServiceCall) -> ServiceResponse:
