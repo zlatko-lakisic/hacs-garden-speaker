@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import aiohttp
@@ -49,7 +50,7 @@ class GardenSpeakerApi:
         method: str,
         path: str,
         *,
-        json: dict[str, Any] | None = None,
+        body: dict[str, Any] | None = None,
         timeout: int = 30,
     ) -> dict[str, Any]:
         """Make one request and return its JSON object."""
@@ -59,7 +60,7 @@ class GardenSpeakerApi:
                 method,
                 f"{self.base_url}{path}",
                 headers=headers,
-                json=json,
+                json=body,
                 timeout=aiohttp.ClientTimeout(total=timeout),
             ) as response:
                 if response.status in (401, 403):
@@ -71,12 +72,23 @@ class GardenSpeakerApi:
                     )
                 if response.content_length == 0:
                     return {}
-                payload = await response.json(content_type=None)
-                if not isinstance(payload, dict):
+                raw = await response.text()
+                if not raw.strip():
+                    return {}
+                try:
+                    payload = json.loads(raw)
+                except ValueError as err:
                     raise GardenSpeakerApiError(
-                        "Control API returned an unexpected response"
-                    )
-                return payload
+                        f"Control API returned non-JSON: {raw[:200]}"
+                    ) from err
+                # Stack restart (and a few other endpoints) return a JSON array.
+                if isinstance(payload, list):
+                    return {"items": payload}
+                if isinstance(payload, dict):
+                    return payload
+                raise GardenSpeakerApiError(
+                    f"Control API returned an unexpected response ({type(payload).__name__})"
+                )
         except GardenSpeakerError:
             raise
         except (aiohttp.ClientError, TimeoutError) as err:
@@ -90,11 +102,11 @@ class GardenSpeakerApi:
 
     async def repair(self) -> dict[str, Any]:
         """Run a soft health repair."""
-        return await self._request("POST", "/health/repair", json={}, timeout=180)
+        return await self._request("POST", "/health/repair", body={}, timeout=180)
 
     async def repair_pairing(self) -> dict[str, Any]:
         """Remove and recreate Bluetooth pairing."""
-        return await self._request("POST", "/bluetooth/repair", json={}, timeout=200)
+        return await self._request("POST", "/bluetooth/repair", body={}, timeout=200)
 
     async def restart_stack(
         self, *, include_control_api: bool = False
@@ -103,6 +115,6 @@ class GardenSpeakerApi:
         return await self._request(
             "POST",
             "/services/stack/restart",
-            json={"include_control_api": include_control_api},
+            body={"include_control_api": include_control_api},
             timeout=180,
         )
